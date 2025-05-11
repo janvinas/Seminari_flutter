@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:seminari_flutter/models/user.dart';
 import 'package:seminari_flutter/screens/auth/login_screen.dart';
 import 'package:seminari_flutter/screens/borrar_screen.dart';
 import 'package:seminari_flutter/screens/details_screen.dart';
@@ -29,7 +30,15 @@ final GoRouter appRouter = GoRouter(
         ),
         GoRoute(
           path: 'editar',
-          builder: (context, state) => const EditarScreen(),
+          builder: (context, state) {
+            User? u;
+            if (state.extra != null) {
+              u = state.extra as User;
+            } else {
+              u = null;
+            }
+            return EditarScreen(user: u);
+          }
         ),
         GoRoute(
           path: 'borrar',

@@ -1,16 +1,22 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:seminari_flutter/components/my_textfield.dart';
 import 'package:seminari_flutter/components/my_button.dart';
+import 'package:seminari_flutter/models/user.dart';
+import 'package:seminari_flutter/provider/users_provider.dart';
+import 'package:seminari_flutter/services/UserService.dart';
 import 'package:seminari_flutter/services/auth_service.dart';
 
 class LoginPage extends StatelessWidget {
   LoginPage({super.key});
-
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
   void signUserIn(BuildContext context) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     final authService = AuthService();
 
     final email = emailController.text;
@@ -26,7 +32,14 @@ class LoginPage extends StatelessWidget {
     if (result.containsKey('error')) {
       _showError(context, result['error']);
     } else {
-      context.go('/');
+      try {
+        String userId = result["id"];
+        User user = await UserService.getUserById(userId);
+        userProvider.currentUser = user;
+        context.go('/');
+      } catch (error) {
+        print(error);
+      }
     }
   }
 

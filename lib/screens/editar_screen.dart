@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:seminari_flutter/models/user.dart';
 //import 'package:go_router/go_router.dart';
 import 'package:seminari_flutter/provider/users_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:seminari_flutter/widgets/Layout.dart';
 
 class EditarScreen extends StatefulWidget {
-  const EditarScreen({super.key});
+  final User? user;
+  const EditarScreen({required this.user, super.key});
 
   @override
   State<EditarScreen> createState() => _EditarScreenState();
@@ -31,8 +33,12 @@ class _EditarScreenState extends State<EditarScreen> {
   Widget build(BuildContext context) {
     final provider = Provider.of<UserProvider>(context, listen: true);
 
+    nomController.text = widget.user == null ? "" : widget.user!.name;
+    edatController.text = widget.user == null ? "" : widget.user!.age.toString();
+    emailController.text = widget.user == null ? "" : widget.user!.email;
+
     return LayoutWrapper(
-      title: 'Create User',
+      title: widget.user == null ? "Crear nou usuari" : "Editar usuari",
       child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -53,12 +59,14 @@ class _EditarScreenState extends State<EditarScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Crear nou usuari',
+                            widget.user == null ? "Crear nou usuari" : "Editar usuari",
                             style: Theme.of(context).textTheme.headlineSmall,
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Omple el formulari a continuació per afegir un nou usuari al sistema.',
+                            widget.user == null ?
+                              'Omple el formulari a continuació per afegir un nou usuari al sistema.' :
+                              'Omple el formulari a continuació per editar un usuari.',
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ],
@@ -126,6 +134,8 @@ class _EditarScreenState extends State<EditarScreen> {
                               icon: Icons.lock,
                               obscureText: true,
                               validator: (value) {
+                                if (widget.user != null && (value == null || value.isEmpty)) return null;
+
                                 if (value == null || value.isEmpty) {
                                   return 'La contrasenya no pot estar buida';
                                 }
@@ -139,12 +149,26 @@ class _EditarScreenState extends State<EditarScreen> {
                             ElevatedButton.icon(
                               onPressed: () {
                                 if (_formKey.currentState!.validate()) {
-                                  provider.crearUsuari(
-                                    nomController.text,
-                                    int.tryParse(edatController.text) ?? 0,
-                                    emailController.text,
-                                    passwordController.text,
-                                  );
+
+                                  if (widget.user == null) {
+                                    provider.crearUsuari(
+                                      nomController.text,
+                                      int.tryParse(edatController.text) ?? 0,
+                                      emailController.text,
+                                      passwordController.text,
+                                    );
+                                  } else {
+                                    provider.editarUsuari(
+                                      widget.user!.id!,
+                                      User(
+                                        name: nomController.text,
+                                        age: int.tryParse(edatController.text) ?? 0,
+                                        email: emailController.text, 
+                                        password: passwordController.text
+                                      ),
+                                      );
+                                  }
+
 
                                   nomController.clear();
                                   edatController.clear();
@@ -153,7 +177,7 @@ class _EditarScreenState extends State<EditarScreen> {
 
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: const Text('Usuari creat correctament!'),
+                                      content: Text(widget.user == null ? 'Usuari creat correctament!' : 'Usuari editat correctament!'),
                                       backgroundColor: Colors.green,
                                       behavior: SnackBarBehavior.floating,
                                       shape: RoundedRectangleBorder(
@@ -164,8 +188,8 @@ class _EditarScreenState extends State<EditarScreen> {
                                 }
                               },
                               icon: const Icon(Icons.save),
-                              label: const Text(
-                                'CREAR USUARI',
+                              label: Text(
+                                widget.user == null ? 'CREAR USUARI' : 'EDITAR USUARI',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                 ),

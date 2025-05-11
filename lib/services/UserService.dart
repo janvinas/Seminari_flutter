@@ -53,10 +53,14 @@ class UserService {
   }
 
   static Future<User> updateUser(String id, User user) async {
+    final userDynamic = user.toJson(); 
+    if (userDynamic["password"] == "") {
+      userDynamic.remove("password"); // remove password if not set
+    }
     final response = await http.put(
       Uri.parse('$baseUrl/$id'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(user.toJson()),
+      body: jsonEncode(userDynamic),
     );
 
     if (response.statusCode == 200) {

@@ -4,12 +4,18 @@ import '../services/UserService.dart';
 
 class UserProvider with ChangeNotifier {
   List<User> _users = [];
+  User? currentUser;
   bool _isLoading = false;
   String? _error;
 
   List<User> get users => _users;
   bool get isLoading => _isLoading;
   String? get error => _error;
+
+  void setCurrentUser(User? user){
+    currentUser = user;
+    notifyListeners();
+  }
 
   void _setLoading(bool loading) {
     _isLoading = loading;
@@ -99,6 +105,22 @@ class UserProvider with ChangeNotifier {
       }
     } catch (e) {
       _setError('Error deleting user: $e');
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  Future<bool> editarUsuari(String id, User user) async {
+    _setLoading(true);
+    _setError(null);
+    try {
+      await UserService.updateUser(id, user);
+      setCurrentUser(user);
+      loadUsers();
+      _setLoading(false);
+      return true;
+    } catch (e) {
+      _setError('Error editing user: $e');
       _setLoading(false);
       return false;
     }

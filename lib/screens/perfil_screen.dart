@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:seminari_flutter/models/user.dart';
+import 'package:seminari_flutter/provider/users_provider.dart';
 import '../widgets/Layout.dart';
 import '../services/auth_service.dart';
 
@@ -8,6 +11,15 @@ class PerfilScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context, listen: true);
+    User user;
+
+    if (userProvider.currentUser == null) {
+      return ErrorWidget("User was null");
+    } else {
+      user = userProvider.currentUser!;
+    }
+
     return LayoutWrapper(
       title: 'Perfil',
       child: SingleChildScrollView(
@@ -26,14 +38,14 @@ class PerfilScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'Exemple',
+                    user.name,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'demo@exemple.com',
+                    user.email,
                     style: Theme.of(
                       context,
                     ).textTheme.titleMedium?.copyWith(color: Colors.grey),
@@ -52,10 +64,10 @@ class PerfilScreen extends StatelessWidget {
                             context,
                             Icons.badge,
                             'ID',
-                            '67f8f3103368468b6e9d509c',
+                            user.id!,
                           ),
                           const Divider(),
-                          _buildProfileItem(context, Icons.cake, 'Edat', '22'),
+                          _buildProfileItem(context, Icons.cake, 'Edat', user.age.toString()),
                         ],
                       ),
                     ),
@@ -81,12 +93,18 @@ class PerfilScreen extends StatelessWidget {
                             Icons.edit,
                             'Editar Perfil',
                             'Actualitza la teva informació personal',
+                            ()  {
+                              context.go('/editar', extra: user);
+                            }
                           ),
                           _buildSettingItem(
                             context,
                             Icons.lock,
                             'Canviar contrasenya',
                             'Actualitzar la contrasenya',
+                            () {
+
+                            }
                           ),
                         ],
                       ),
@@ -168,13 +186,14 @@ class PerfilScreen extends StatelessWidget {
     IconData icon,
     String title,
     String subtitle,
+    GestureTapCallback onTap,
   ) {
     return ListTile(
       leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
       title: Text(title),
       subtitle: Text(subtitle),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-      onTap: () {},
+      onTap: onTap,
     );
   }
 }
